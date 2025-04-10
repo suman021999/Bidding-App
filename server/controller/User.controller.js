@@ -1,0 +1,91 @@
+import asyncHandler from "express-async-handler"
+import {User} from "../models/User.model.js"
+import jwt from "jsonwebtoken"
+import bcrypt from 'bcryptjs'
+
+const generaltrToken=(id)=>{
+   // return jwt.sing({id}, process.env.JWT_SECRET,{expiresIn:"200d"})
+
+   return jwt.sign({id}, process.env.JWT_SECRET,{expiresIn:"1d"})
+
+}
+
+export const registerUser=asyncHandler(async(req,res)=>{
+   const{username,email,password}=req.body
+   if(!username || !email || !password ){
+    res.status(400)
+    throw new Error ("plese fill in all required files")
+   }
+
+
+   const userExits = await User.findOne({email})
+   if(userExits){
+      res.status(400)
+      throw new Error('Email is already in use or exist')
+   }
+   const user=await User.create({
+      username,
+      email,
+      password
+   })
+   const token=generaltrToken(user._id)
+   res.cookie("token",token,{
+      path:"/",
+      httpOnly:true,
+      expires:new Date(Date.now()+1000*86400),
+      sameSite:"none",
+      secure:true
+   })
+
+   if(user){
+      const {_id,username,email,photo,role}=user
+      res.status(201).json({_id,username,email,photo,role})
+   }
+
+   else{
+      res.status(400)
+      throw new Error("Invalid user data")
+   }
+
+})
+
+
+export const loginUser=asyncHandler(async(req,res)=>{
+   const {email,password}=req.body
+   if(!email || !password){
+      res.status(400)
+      throw new Error("Please add email and password")
+   }
+
+   const user=await User.findOne({email})
+
+   if(!user){
+      res.status(400)
+      throw new Error("user not found,please singUp")
+   }
+
+
+   const passwordIsCorrect=await bcrypt.compare(password,user.password)
+
+   const token=generaltrToken(user._id)
+
+   res.cookie("token",token,{
+      path:"/",
+      httpOnly:true,
+      expires:new Date(Date.now()+1000*86400),
+      sameSite:"none",
+      secure:true
+   })
+
+   if(user && passwordIsCorrect){
+      const {_id,username,email,photo,role}=user
+      res.status(201).json({_id,username,email,photo,role})
+   }
+   else{
+      res.status(400)
+      throw new Error("Invalid user data")
+   }
+})
+
+
+
