@@ -88,4 +88,111 @@ export const loginUser=asyncHandler(async(req,res)=>{
 })
 
 
+export const loginStatus=asyncHandler(async(req,res)=>{
+   const token=req.cookies.token
+   if(!token){
+      return res.json(false)
+   }
+
+   const verified=jwt.verify(token,process.env.JWT_SECRET)
+   if(verified){
+      return res.json(true)
+   }
+   return res.json(false)
+})
+
+
+export const logout=asyncHandler(async(req,res)=>{
+   res.cookie("token",'',{
+      path:"/",
+      httpOnly:true,
+      expires:new Date(0),
+      sameSite:"none",
+      secure:true
+   })
+   return res.status(200).json({msg:"successful logout"})
+})
+
+
+// export const  loginASseller=asyncHandler(async(req,res)=>{
+//    const {email,password}=req.body
+//    if(!email || !password){
+//       res.status(400)
+//       throw new Error("please add email and password")
+//    }
+
+//    const user=await User.findOne({email})
+//    if(!user){
+//       res.status(400)
+//       throw new Error("user not found,please singUp")
+//    }
+
+//    const passwordIsCorrect=await bcrypt.compare(password,user.password)
+//    if(passwordIsCorrect){
+//       res.status(400)
+//       throw new Error("inviled password")
+//    }
+
+//    user.role="seller"
+//    await user.save()
+//    const token=generaltrToken(user._id)
+
+//    res.cookie("token",token,{
+//       path:"/",
+//       httpOnly:true,
+//       expires:new Date(Date.now()+1000*86400),
+//       sameSite:"none",
+//       secure:true
+//    })
+
+   
+   
+//       const {_id,username,email: userEmail,photo,role}=user
+//       res.status(201).json({_id,username,email: userEmail,photo,role})
+   
+ 
+// })
+
+
+export const loginASseller = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Please add Email and Password");
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(400);
+    throw new Error("User not found, Please signUp");
+  }
+
+  const passwordIsCorrrect = await bcrypt.compare(password, user.password);
+
+  const token = generaltrToken(user._id);
+
+  res.cookie("token", token, {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 * 86400),
+    sameSite: "none",
+    secure: true,
+  });
+
+  user.role = "seller";
+  user.save();
+  if (user && passwordIsCorrrect) {
+    const { _id, name, email, photo, role } = user;
+    res.status(201).json({ _id, name, email, photo, role, token });
+  } else {
+    res.status(400);
+    throw new Error("Invalid email or password");
+  }
+}); 
+
+const test=asyncHandler(async(req,res)=>{
+
+})
+
+
 
