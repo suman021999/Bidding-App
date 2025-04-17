@@ -20,7 +20,7 @@ export const protcet=asyncHandler(async(req,res,next)=>{
             throw new Error("user not found")
         }
 
-        req.user=user
+        // req.user=user
         next()
     } catch (error) {
         res.status(401)
