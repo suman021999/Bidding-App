@@ -150,11 +150,51 @@ export const loginASseller = asyncHandler(async (req, res) => {
 }); 
 
 export const getUser=asyncHandler(async(req,res)=>{
-const user=await User.findById(req,user._id).select("-password")
+const user=await User.findById(req.user._id).select("-password")
 res.status(200).json(user)
 })
 
+export const getuserBalence=asyncHandler(async(req,res)=>{
+   const user=await User.findById(req.user._id)
 
+   if(!user){
+      res.status(404)
+      throw new Error("user not found")
+   }
 
+   res.status(200).json({balance:user.balance})
+})
+
+export const getAlluser=asyncHandler(async(req,res)=>{
+   const userList=await User.find({})
+
+   if(!userList.length){
+      return res.status(404).json({msg:"no user found"})
+   }
+   res.status(200).json(userList)
+})
+
+export const isAdmin=asyncHandler(async(req,res,next)=>{
+   if (req.user && req.user.role === "admin") {
+      next();
+    } else {
+      res.status(403);
+      throw new Error("Access denied. You are not an admin.");
+    }
+})
+
+export const estimateIncome = asyncHandler(async (req, res) => {
+   try {
+     const admin = await User.findOne({ role: "admin" });
+     if (!admin) {
+       return res.status(404).json({ error: "Admin user not found" });
+     }
+     const commissionBalance = admin.commissionBalance;
+     res.status(200).json({ commissionBalance});
+   } catch (error) {
+     console.error(error);
+     res.status(500).json({ error: "Internal server error" });
+   }
+ });
 
 
