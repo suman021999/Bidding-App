@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import cors from "cors"
 import userRouter from './routes/User.route.js'
+import productRouter from './routes/product.route.js'
 import database from './database/database.js'
 import {errorHandler} from "./middlewares/error.mddleware.js"
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json())
 
 app.use("/api/v1/user",userRouter)
+app.use("/api/v1/product",productRouter)
 app.use(errorHandler)
 
 app.get("/",(req,res)=>{
