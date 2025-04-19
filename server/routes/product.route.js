@@ -1,6 +1,6 @@
 import {Router} from 'express'
-import { createProduct } from '../controller/product.controller'
-import { protect } from '../middlewares/auth.middleware'
+import { createProduct } from '../controller/product.controller.js'
+import { protect } from '../middlewares/auth.middleware.js'
 
 
 const router=Router()
