@@ -38,3 +38,10 @@ app.get("/",(req,res)=>{
 const port =process.env.PORT || 3000
 
 app.listen(port,()=>console.log(`server run on ${port}`))
+
+
+// {   
+//   "email":"patra6319@gmail.com",
+//   "username":"patra6319",
+//   "password":"Suman@1999"
+//   }

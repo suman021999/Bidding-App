@@ -46,6 +46,8 @@ export const createProduct=asyncHandler(async(req,res)=>{
         success: true,
         data: product,
       });
+
+    res.send("jndvnsd send")
 })
 
 
