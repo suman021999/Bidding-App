@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import express from 'express'
 import cors from "cors"
+import path from 'path'
 import userRouter from './routes/User.route.js'
 import productRouter from './routes/product.route.js'
 import database from './database/database.js'
@@ -29,7 +30,9 @@ app.use(bodyParser.json())
 
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/product",productRouter)
+
 app.use(errorHandler)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/",(req,res)=>{
     res.send("home page")

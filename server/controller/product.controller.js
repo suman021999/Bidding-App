@@ -1,5 +1,7 @@
 import asyncHandler from "express-async-handler"
 import {Product} from "../models/product.model.js"
+import { v2 as cloudinary } from "cloudinary";
+
 import slugify from "slugify"
 
 export const createProduct=asyncHandler(async(req,res)=>{
@@ -25,6 +27,31 @@ export const createProduct=asyncHandler(async(req,res)=>{
         throw new Error("Please fill in all fields");
       }
 
+      let fileData = {};
+      if(req.file){
+        let uploadedFile;
+
+        try {
+            uploadedFile = await cloudinary.uploader.upload(req,file.path,{
+                folder: "Bidding/Product",
+                resource_type: "image",
+            })
+        } 
+        catch (error) {
+            res.status(500);
+            throw new Error("Image could not be uploaded");
+        }
+
+        fileData = {
+            fileName: req.file.originalname,
+            filePath: uploadedFile.secure_url,
+            fileType: req.file.mimetype,
+            public_id: uploadedFile.public_id,
+          };
+      }
+
+
+
       
       const product=await Product.create({
         user:userId,
@@ -38,9 +65,7 @@ export const createProduct=asyncHandler(async(req,res)=>{
         width,
         mediumused,
         weigth,
-        // image
-    
-       
+        image: fileData, 
     })
     res.status(201).json({
         success: true,
