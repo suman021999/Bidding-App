@@ -13,10 +13,10 @@ const productSchema = new Schema(
             require: [true, "Please add a title"],
             trim: true,
           },
-          // slug: {
-          //   type: String,
-          //   unique: true,
-          // },
+          slug: {
+            type: String,
+            unique: true,
+          },
           description: {
             type: String,
             require: [true, "Please add a description"],
