@@ -34,11 +34,12 @@ export const createProduct=asyncHandler(async(req,res)=>{
         try {
             uploadedFile = await cloudinary.uploader.upload(req,file.path,{
                 folder: "Bidding/Product",
-                resource_type: "image",
+                resource_type: "image", 
             })
         } 
         catch (error) {
             res.status(500);
+           
             throw new Error("Image could not be uploaded");
         }
 

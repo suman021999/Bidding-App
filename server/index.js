@@ -3,7 +3,8 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import express from 'express'
 import cors from "cors"
-import path from 'path'
+import path from "path";
+import { fileURLToPath } from "url";
 import userRouter from './routes/User.route.js'
 import productRouter from './routes/product.route.js'
 import database from './database/database.js'
@@ -32,6 +33,12 @@ app.use("/api/v1/user",userRouter)
 app.use("/api/v1/product",productRouter)
 
 app.use(errorHandler)
+
+// Setup __dirname equivalent in ES6 modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from "uploads" folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/",(req,res)=>{
