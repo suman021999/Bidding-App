@@ -29,7 +29,7 @@ export const createProduct=asyncHandler(async(req,res)=>{
 
       let fileData = {};
       if(req.file){
-        let uploadedFile;
+        let uploadedFile; 
 
         try {
             uploadedFile = await cloudinary.uploader.upload(req,file.path,{
@@ -40,6 +40,7 @@ export const createProduct=asyncHandler(async(req,res)=>{
         catch (error) {
             res.status(500);
            
+            console.error("Cloudinary upload error:", error);
             throw new Error("Image could not be uploaded");
         }
 
