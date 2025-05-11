@@ -4,8 +4,6 @@ import jwt from "jsonwebtoken"
 import bcrypt from 'bcryptjs'
 
 const generaltrToken=(id)=>{
-   // return jwt.sing({id}, process.env.JWT_SECRET,{expiresIn:"200d"})
-
    return jwt.sign({id}, process.env.JWT_SECRET,{expiresIn:"1d"})
 
 }
@@ -174,14 +172,7 @@ export const getAlluser=asyncHandler(async(req,res)=>{
    res.status(200).json(userList)
 })
 
-export const isAdmin=asyncHandler(async(req,res,next)=>{
-   if (req.user && req.user.role === "admin") {
-      next();
-    } else {
-      res.status(403);
-      throw new Error("Access denied. You are not an admin.");
-    }
-})
+
 
 export const estimateIncome = asyncHandler(async (req, res) => {
    try {

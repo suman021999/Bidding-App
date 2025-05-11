@@ -1,6 +1,6 @@
 import {Router} from 'express'
-import { estimateIncome, getAlluser, getUser, getuserBalence, isAdmin, loginASseller, loginStatus, loginUser, logout, registerUser } from '../controller/User.controller.js'
-import { protect } from '../middlewares/auth.middleware.js'
+import { estimateIncome, getAlluser, getUser, getuserBalence,  loginASseller, loginStatus, loginUser, logout, registerUser } from '../controller/User.controller.js'
+import { isAdmin, protect } from '../middlewares/auth.middleware.js'
 
 const router=Router()
 
