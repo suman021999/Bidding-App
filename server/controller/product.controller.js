@@ -165,11 +165,12 @@ export const updateProduct=asyncHandler(async(req,res)=>{
             public_id: uploadedFile.public_id,
           };
       }
-const updatedProduct = await Product.findByIdAndUpdate(
+   const updatedProduct = await Product.findByIdAndUpdate(
     { _id: id },
     {
       title,
       description,
+      category,
       price,
       height,
       lengthpic,
@@ -183,16 +184,60 @@ const updatedProduct = await Product.findByIdAndUpdate(
       runValidators: true,
     }
   );
-  res.status(200).json(updatedProduct);
-
-
-      
- 
-    
+  res.status(200).json(updatedProduct);    
 })
 
 
+export const getAllProductsofUser=asyncHandler(async(req,res)=>{
+    const userId = req.user._id;
+    const products = await Product.find({ user: userId }).sort("-createAt").populate("user");
+ 
+  
+    res.status(200).json(products);
+  })
 
+export const verifyAndAddCommissionProductByAmdin=asyncHandler(async(req,res)=>{
+     const { commission } = req.body;
+  const { id } = req.params;
+    const product=await Product.findById(id)
+    if(!product){
+        res.status(404)
+        throw new Error("Product not found")
+    }
+    product.isverify=true
+    product.commission=commission
+    await product.save()
+    res.status(200).json({message:"Product verified successfully",data:product})
 
+})
 
+export const getAllProductsByAmdin=asyncHandler(async(req,res)=>{
+  const products=await Product.find({}).sort("-createdAt").populate("user")
+  res.status(200).json(products)
+})
 
+export const deleteProductsByAmdin=asyncHandler(async(req,res)=>{
+  try {
+    const { productIds} = req.body;
+
+    const result = await Product.findOneAndDelete({ _id: productIds });
+
+    res.status(200).json({ message: `${result.deletedCount} products deleted successfully` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
+export const getProductBySlug=asyncHandler(async(req,res)=>{
+  const {id}=req.params
+  const product=await Product.findById(id)
+  if(!product){
+    res.status(404)
+    throw new Error("Product not found")
+  }
+  res.status(200).json(product)
+})
+  export const getAllSoldProducts=asyncHandler(async(req,res)=>{
+    const products = await Product.find({ isSoldout: true }).sort("-createAt").populate("user");
+    res.status(200).json(products);
+  })
