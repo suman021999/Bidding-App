@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import userRouter from './routes/User.route.js'
 import productRouter from './routes/product.route.js'
+import biddingRouter from './routes/bidding.route.js'
 import database from './database/database.js'
 import {errorHandler} from "./middlewares/error.mddleware.js"
 
@@ -31,6 +32,7 @@ app.use(bodyParser.json())
 
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/product",productRouter)
+app.use("/api/v1/bidding",biddingRouter)
 
 app.use(errorHandler)
 
