@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler"
 import {Bidding} from "../models/bidding.model.js";
 import {Product} from "../models/product.model.js"
+import {User} from "../models/User.model.js"
 
 export const getBiddingHistory=asyncHandler(async(req,res)=>{
   const { productId} = req.params;
@@ -77,6 +78,20 @@ export const sellProduct=asyncHandler(async(req,res)=>{
     product.isSoldout=true
     product.soldTo=highestBid.user
     product.soldPrice=finalprice
-    await product.save()
+    
 
+    const admin=await User.findOne({role:"admin"})
+    if(admin){
+      admin.commissionBalance+=commissionAmount
+      await admin.save()
+    }
+    const seller=await User.findById(product.user)
+    if(seller){
+      seller.balance+=finalprice
+      await seller.save()
+    }
+    else{
+      return res.status(404).json({error:"seller not found"})
+    }
+    await product.save()
 })
