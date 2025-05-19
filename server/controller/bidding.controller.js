@@ -76,7 +76,7 @@ export const sellProduct=asyncHandler(async(req,res)=>{
     const finalprice=highestBid.price-commissionAmount
 
     product.isSoldout=true
-    product.soldTo=highestBid.user
+    product.soldTo=highestBid.use
     product.soldPrice=finalprice
     
 
