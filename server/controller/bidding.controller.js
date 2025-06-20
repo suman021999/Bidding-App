@@ -45,29 +45,29 @@ export const placeBid=asyncHandler(async(req,res)=>{
   }
   const biddingProduct=await Bidding.create({
     user: userId,
-      product: productId,
-      price,
+    product: productId,
+    price,
   })
-  res.status(201).json({Bidding:biddingProduct})
+  res.status(200).json({Bidding:biddingProduct})
 })
 
 export const sellProduct=asyncHandler(async(req,res)=>{
+
   const {productId} = req.body;
   const userId=req.user.id
+
   const product=await Product.findById(productId)
   if(!product){
     res.status(404)
     throw new Error("product not found")
   }
+
   if(product.user.toString() !== userId){
-    res.status(403).json({error:"You are not authorized to sell this product"})
-    
-    
+    return res.status(403).json({error:"You are not authorized to sell this product"})
   }
   const highestBid=await Bidding.findOne({product:productId}).sort({price:-1}).populate("user")
      if(highestBid){
-      res.status(400)
-      throw new Error({error:"no winning bid found for this product"})
+     return res.status(400).json({error:"no winning bid found for this product"})
 
     }
 
@@ -81,11 +81,15 @@ export const sellProduct=asyncHandler(async(req,res)=>{
     
 
     const admin=await User.findOne({role:"admin"})
+
     if(admin){
       admin.commissionBalance+=commissionAmount
       await admin.save()
     }
+
+
     const seller=await User.findById(product.user)
+
     if(seller){
       seller.balance+=finalprice
       await seller.save()
@@ -94,4 +98,11 @@ export const sellProduct=asyncHandler(async(req,res)=>{
       return res.status(404).json({error:"seller not found"})
     }
     await product.save()
+
+    res.status(200).json({
+      msg:"Product sold successfully",
+      // product,
+      // highestBid
+    })
 })
+
