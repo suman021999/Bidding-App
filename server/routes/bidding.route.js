@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { isAdmin, isSeller, protect } from '../middlewares/auth.middleware.js'
+import { isSeller, protect } from '../middlewares/auth.middleware.js'
 import { getBiddingHistory, placeBid, sellProduct } from '../controller/bidding.controller.js';
 const router=Router()
 

@@ -30,59 +30,30 @@ export const createProduct=asyncHandler(async(req,res)=>{
         throw new Error("Please fill in all fields");
       }
 
-      // let fileData = {};
-      // if(req.file){
-      //   let uploadedFile; 
 
-      //   try {
-      //       uploadedFile = await cloudinary.uploader.upload(req.file.path,{
-      //           folder: "Bidding/Product",
-      //           resource_type: "image", 
-      //       })
-      //   } 
-      //   catch (error) {
-      //       res.status(500);
-           
-      //       console.error("Cloudinary upload error:", error);
-      //       throw new Error("Image could not be uploaded");
-      //   }
-
-      //   fileData = {
-      //       fileName: req.file.originalname,
-      //       filePath: uploadedFile.secure_url,
-      //       fileType: req.file.mimetype,
-      //       public_id: uploadedFile.public_id,
-      //     };
-
-
-      let fileData = {};
+let fileData = {};
 
 if (req.file) {
-  const bufferToStream = (buffer) => {
-    const readable = new Readable();
-    readable.push(buffer);
-    readable.push(null);
-    return readable;
-  };
-
   try {
-    const streamUpload = () => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: "Bidding/Product",
-            resource_type: "image",
-          },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          }
-        );
-        bufferToStream(req.file.buffer).pipe(stream);
-      });
-    };
-
-    const uploadedFile = await streamUpload();
+    // Convert buffer to stream and upload to Cloudinary
+    const uploadedFile = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "Bidding/Product",
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      
+      // Create readable stream from buffer and pipe to Cloudinary
+      const bufferStream = new Readable();
+      bufferStream.push(req.file.buffer);
+      bufferStream.push(null);
+      bufferStream.pipe(stream);
+    });
 
     fileData = {
       fileName: req.file.originalname,
@@ -90,12 +61,13 @@ if (req.file) {
       fileType: req.file.mimetype,
       public_id: uploadedFile.public_id,
     };
+    
   } catch (error) {
     console.error("Cloudinary upload error:", error);
     res.status(500);
     throw new Error("Image could not be uploaded");
   }
-      }
+}
 
 
 
@@ -160,13 +132,12 @@ res.status(200).json({message:"Product deleted successfully"})
 })
 
 
-export const updateProduct=asyncHandler(async(req,res)=>{
-    const { title, description, price, category, height, lengthpic, width, mediumused, weigth } = req.body;
-    const { id } = req.params;
-    const product = await Product.findById(id);
+export const updateProduct = asyncHandler(async (req, res) => {
+  const { title, description, price, category, height, lengthpic, width, mediumused, weight } = req.body;
+  const { id } = req.params;
+  const product = await Product.findById(id);
 
- 
- if (!product) {
+  if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
@@ -175,39 +146,52 @@ export const updateProduct=asyncHandler(async(req,res)=>{
     throw new Error("User not authorized");
   }
 
-      let fileData = {};
-      if(req.file){
-        let uploadedFile; 
+  let fileData = {};
+  if (req.file) {
+    try {
+      // Upload new image using stream (for memory storage)
+      const uploadedFile = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "Bidding/Product",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
 
+        // Convert buffer to stream
+        const bufferStream = new Readable();
+        bufferStream.push(req.file.buffer);
+        bufferStream.push(null);
+        bufferStream.pipe(uploadStream);
+      });
+
+      // Delete old image if it exists
+      if (product.image?.public_id) {
         try {
-            uploadedFile = await cloudinary.uploader.upload(req.file.path,{
-                folder: "Bidding/Product",
-                resource_type: "image", 
-            })
-        } 
-        catch (error) {
-            res.status(500);
-           
-            console.error("Cloudinary upload error:", error);
-            throw new Error("Image could not be uploaded");
+          await cloudinary.uploader.destroy(product.image.public_id);
+        } catch (error) {
+          console.error("Error deleting previous image:", error);
         }
-
-          if (product.image && product.image.public_id) {
-      try {
-        await cloudinary.uploader.destroy(product.image.public_id);
-      } catch (error) {
-        console.error("Error deleting previous image from Cloudinary:", error);
       }
+
+      fileData = {
+        fileName: req.file.originalname,
+        filePath: uploadedFile.secure_url,
+        fileType: req.file.mimetype,
+        public_id: uploadedFile.public_id,
+      };
+    } catch (error) {
+      console.error("Cloudinary upload error:", error);
+      res.status(500);
+      throw new Error("Image could not be uploaded");
     }
+  }
 
-        fileData = {
-            fileName: req.file.originalname,
-            filePath: uploadedFile.secure_url,
-            fileType: req.file.mimetype,
-            public_id: uploadedFile.public_id,
-          };
-      }
-   const updatedProduct = await Product.findByIdAndUpdate(
+  const updatedProduct = await Product.findByIdAndUpdate(
     { _id: id },
     {
       title,
@@ -218,16 +202,17 @@ export const updateProduct=asyncHandler(async(req,res)=>{
       lengthpic,
       width,
       mediumused,
-      weigth,
-      image: Object.keys(fileData).length === 0 ? Product?.image : fileData,
+      weight, // Fixed typo from 'weigth' to 'weight'
+      image: Object.keys(fileData).length === 0 ? product.image : fileData,
     },
     {
       new: true,
       runValidators: true,
     }
   );
-  res.status(200).json(updatedProduct);    
-})
+  
+  res.status(200).json(updatedProduct);
+});
 
 
 export const getAllProductsofUser=asyncHandler(async(req,res)=>{
@@ -283,3 +268,5 @@ export const getAllSoldProducts=asyncHandler(async(req,res)=>{
     const products = await Product.find({ isSoldout: true }).sort("-createAt").populate("user");
     res.status(200).json(products);
 })
+
+

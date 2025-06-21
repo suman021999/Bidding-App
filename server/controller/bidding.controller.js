@@ -12,8 +12,9 @@ export const getBiddingHistory=asyncHandler(async(req,res)=>{
 
 export const placeBid=asyncHandler(async(req,res)=>{
   const {productId, price} = req.body;
-  const userId=req.user._id
+  const userId=req.user.id
   const product=await Product.findById(productId)
+
   if(!product.isverify){
     res.status(404)
     throw new Error("bidding is not verified for these product")
@@ -51,6 +52,8 @@ export const placeBid=asyncHandler(async(req,res)=>{
   res.status(200).json({Bidding:biddingProduct})
 })
 
+
+
 export const sellProduct=asyncHandler(async(req,res)=>{
 
   const {productId} = req.body;
@@ -58,8 +61,7 @@ export const sellProduct=asyncHandler(async(req,res)=>{
 
   const product=await Product.findById(productId)
   if(!product){
-    res.status(404)
-    throw new Error("product not found")
+   return res.status(404).json("product not found")
   }
 
   if(product.user.toString() !== userId){
@@ -100,10 +102,7 @@ export const sellProduct=asyncHandler(async(req,res)=>{
     }
     await product.save()
 
-    res.status(200).json({
-      msg:"Product sold successfully",
-      
-    })
+    res.status(200).json({msg:"Product has been successfully sold!"})
     
 })
 
