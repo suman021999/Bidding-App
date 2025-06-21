@@ -65,6 +65,7 @@ export const sellProduct=asyncHandler(async(req,res)=>{
   if(product.user.toString() !== userId){
     return res.status(403).json({error:"You are not authorized to sell this product"})
   }
+  
   const highestBid=await Bidding.findOne({product:productId}).sort({price:-1}).populate("user")
      if(highestBid){
      return res.status(400).json({error:"no winning bid found for this product"})
@@ -101,8 +102,8 @@ export const sellProduct=asyncHandler(async(req,res)=>{
 
     res.status(200).json({
       msg:"Product sold successfully",
-      // product,
-      // highestBid
+      
     })
+    
 })
 

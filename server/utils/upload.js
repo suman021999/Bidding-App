@@ -1,27 +1,21 @@
+
 import multer from "multer";
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads")
-  },
-  filename: function (req, file, cb) {
-    cb(null, new Date().toISOString().replace(/:/g, "-") + "-" + file.originalname) // 23/08/2022
-  },
-})
+// Use memory storage instead of disk storage
+const storage = multer.memoryStorage();
 
+// File filter to allow only specific image types
 function fileFilter(req, file, cb) {
-  if (file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/jpeg") {
-    cb(null, true)
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
   } else {
-    cb(null, false)
+    cb(null, false);
   }
 }
 
-export const upload = multer({ storage, fileFilter })
-
-
-
-// import multer from "multer";
-
-// const storage = multer.memoryStorage();
-// export const upload = multer({ storage });
+// Export the configured multer middleware
+export const upload = multer({ storage, fileFilter });

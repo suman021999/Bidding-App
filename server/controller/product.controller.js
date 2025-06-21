@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler"
 import {Product} from "../models/product.model.js"
 import cloudinary from "../config/cloudinary.js";
-
+import { Readable } from "stream";
 
 import slugify from "slugify"
 
@@ -30,29 +30,71 @@ export const createProduct=asyncHandler(async(req,res)=>{
         throw new Error("Please fill in all fields");
       }
 
-      let fileData = {};
-      if(req.file){
-        let uploadedFile; 
+      // let fileData = {};
+      // if(req.file){
+      //   let uploadedFile; 
 
-        try {
-            uploadedFile = await cloudinary.uploader.upload(req.file.path,{
-                folder: "Bidding/Product",
-                resource_type: "image", 
-            })
-        } 
-        catch (error) {
-            res.status(500);
+      //   try {
+      //       uploadedFile = await cloudinary.uploader.upload(req.file.path,{
+      //           folder: "Bidding/Product",
+      //           resource_type: "image", 
+      //       })
+      //   } 
+      //   catch (error) {
+      //       res.status(500);
            
-            console.error("Cloudinary upload error:", error);
-            throw new Error("Image could not be uploaded");
-        }
+      //       console.error("Cloudinary upload error:", error);
+      //       throw new Error("Image could not be uploaded");
+      //   }
 
-        fileData = {
-            fileName: req.file.originalname,
-            filePath: uploadedFile.secure_url,
-            fileType: req.file.mimetype,
-            public_id: uploadedFile.public_id,
-          };
+      //   fileData = {
+      //       fileName: req.file.originalname,
+      //       filePath: uploadedFile.secure_url,
+      //       fileType: req.file.mimetype,
+      //       public_id: uploadedFile.public_id,
+      //     };
+
+
+      let fileData = {};
+
+if (req.file) {
+  const bufferToStream = (buffer) => {
+    const readable = new Readable();
+    readable.push(buffer);
+    readable.push(null);
+    return readable;
+  };
+
+  try {
+    const streamUpload = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "Bidding/Product",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        bufferToStream(req.file.buffer).pipe(stream);
+      });
+    };
+
+    const uploadedFile = await streamUpload();
+
+    fileData = {
+      fileName: req.file.originalname,
+      filePath: uploadedFile.secure_url,
+      fileType: req.file.mimetype,
+      public_id: uploadedFile.public_id,
+    };
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    res.status(500);
+    throw new Error("Image could not be uploaded");
+  }
       }
 
 
@@ -237,7 +279,7 @@ export const getProductBySlug=asyncHandler(async(req,res)=>{
   }
   res.status(200).json(product)
 })
-  export const getAllSoldProducts=asyncHandler(async(req,res)=>{
+export const getAllSoldProducts=asyncHandler(async(req,res)=>{
     const products = await Product.find({ isSoldout: true }).sort("-createAt").populate("user");
     res.status(200).json(products);
-  })
+})
