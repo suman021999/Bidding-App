@@ -19,5 +19,4 @@ router.route("/admin/product-verified/:id").patch( protect, isAdmin, verifyAndAd
 router.route("/admin/products").get( protect, isAdmin, getAllProductsByAmdin);
 router.route("/admin/products").delete( protect, isAdmin, deleteProductsByAmdin);
 
-
 export default router

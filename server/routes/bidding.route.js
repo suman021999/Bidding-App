@@ -11,3 +11,9 @@ router.route("/").post( protect, placeBid);
 
 
 export default router
+
+
+// {
+// 	"productId":"68570848cd8fa66ac4197407", 
+//  "price":459
+// }

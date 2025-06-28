@@ -69,7 +69,7 @@ export const sellProduct=asyncHandler(async(req,res)=>{
   }
   
   const highestBid=await Bidding.findOne({product:productId}).sort({price:-1}).populate("user")
-     if(highestBid){
+     if(!highestBid){
      return res.status(400).json({error:"no winning bid found for this product"})
 
     }
